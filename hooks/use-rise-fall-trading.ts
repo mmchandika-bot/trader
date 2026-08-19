@@ -82,50 +82,13 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
     clearSellError,
   } = useBaseTrading({ ws, isConnected, isExhausted, isAuthenticated, onAuthWSFailed, contractTypes: CONTRACT_TYPES });
 
-
-  //
-  let dValue=60;
-  let urlDate='';
-  let duValue='m';
-  let cType='CALL';
-  let sValue='10';
-  
-  if(typeof window !=='undefined'){
-	  const query = new URLSearchParams(window.location.search);
-
-	  const gdValue = Number(query.get("d"));
-	  dValue = Number.isFinite(gdValue) && gdValue > 0
-		  ? gdValue
-		  : dValue;
-
-	  urlDate = query.get("dt")?.trim() ?? "";
-	  //console.log(urlDate+" "+Date);
-	  
-	  const gduValue = query.get("du");
-	  duValue = gduValue === "m" ||  gduValue === "h" || gduValue === "d" || gduValue === "end-time"
-		  ? gduValue
-		  : duValue;
-
-	  const gcType = query.get("t");
-	  cType = gcType === "f"
-		  ? "PUT"
-		  : cType;
-
-	  const gsValue = Number(query.get("s"));
-	  sValue = Number.isFinite(gsValue) && gsValue > 0
-		  ? String(gsValue)
-		  : sValue;
-	  //console.log("Stake: "+sValue);
-  }
-  //
-
-  const [direction, setDirection] = useState<Direction>(cType as Direction);
-  const [allowEquals, setAllowEquals] = useState<boolean>(true);
-  const [stake, setStake] = useState<string>(String(sValue));
-  const [duration, setDuration] = useState<number>(dValue);
-  const [durationUnit, setDurationUnitRaw] = useState<DurationSelectUnit>(duValue as DurationSelectUnit);
+  const [direction, setDirection] = useState<Direction>('CALL');
+  const [allowEquals, setAllowEquals] = useState<boolean>(false);
+  const [stake, setStake] = useState<string>('10');
+  const [duration, setDuration] = useState<number>(1);
+  const [durationUnit, setDurationUnitRaw] = useState<DurationSelectUnit>('t');
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [endTime, setEndTime] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>('');
   const [durationOptionsSymbol, setDurationOptionsSymbol] = useState<string | null>(null);
 
   const durationOptions = useMemo(
