@@ -27,10 +27,17 @@ export function DerivWSProvider({ children }: { children: React.ReactNode }) {
     url: auth.wsUrl,
     accountId: auth.activeAccountId ?? undefined,
   });
+  // Gate on wsUrl, not activeAccountId alone. An account is selected well before
+  // its socket is authorized — it is restored from storage at mount and set by
+  // completeAuth before the OTP URL resolves — and `balance` on the public
+  // socket earns AuthorizationRequired, which the app's blanket WS-error toast
+  // showed the user as "Please log in." right after a successful login
+  // (deriv-com/deriv-api-v2#587). Matches the `isAuthenticated: !!auth.wsUrl`
+  // gate every other authenticated consumer already uses.
   useBalanceSync(
     ws,
     isConnected,
-    auth.activeAccountId,
+    auth.wsUrl ? auth.activeAccountId : null,
     auth.updateAccountBalance
   );
 

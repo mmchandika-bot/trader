@@ -47,6 +47,98 @@ function getBlockLabels(
   };
 }
 
+/**
+ * The Buy button, in its three configurable styles.
+ *
+ * Exported because the button has two homes: inline in the reorderable column
+ * (the default), or lifted into the pinned bottom bar when `buy.pinned` is on —
+ * and that bar is owned by the view, not by this component. One implementation
+ * means the pinned button stays style-for-style identical to the inline one.
+ */
+export interface ConfigurableBuyButtonProps {
+  variant: StyleVariant;
+  isConnected: boolean;
+  proposal: ProposalInfo | null;
+  onBuy: () => void;
+  isBuying: boolean;
+}
+
+export function ConfigurableBuyButton({
+  variant,
+  isConnected,
+  proposal,
+  onBuy,
+  isBuying,
+}: ConfigurableBuyButtonProps) {
+  const { localize } = useAppTranslations();
+
+  const disabled = !isConnected || !proposal || isBuying;
+  const payout = proposal ? proposal.payout.toFixed(2) : null;
+
+  const variants: Record<StyleVariant, () => React.ReactNode> = {
+    // a — pill (default)
+    a: () => (
+      <Button
+        className="w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground"
+        size="lg"
+        disabled={disabled}
+        onClick={onBuy}
+      >
+        {isBuying ? (
+          <Localize i18n_default_text="Purchasing..." />
+        ) : (
+          <span className="flex flex-col items-center leading-tight gap-0.5">
+            <span><Localize i18n_default_text="Buy" /></span>
+            {payout && (
+              <span className="text-xs font-normal opacity-90">
+                <Localize i18n_default_text="Payout {{payout}} USD" values={{ payout }} />
+              </span>
+            )}
+          </span>
+        )}
+      </Button>
+    ),
+    // Block — squared, bold, payout shown as a badge on the right.
+    b: () => (
+      <Button
+        className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-base font-bold"
+        disabled={disabled}
+        onClick={onBuy}
+      >
+        <span className="flex w-full items-center justify-between px-1">
+          <span>{isBuying ? localize('Purchasing...') : localize('Buy')}</span>
+          {payout && (
+            <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium">
+              {payout} USD
+            </span>
+          )}
+        </span>
+      </Button>
+    ),
+    // Gradient with an upward-trend icon + payout below.
+    c: () => (
+      <Button
+        className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-primary/70 hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/20"
+        disabled={disabled}
+        onClick={onBuy}
+      >
+        <span className="flex flex-col items-center leading-tight gap-0.5">
+          <span className="flex items-center gap-1.5 font-semibold">
+            <TrendingUp className="h-4 w-4" />
+            {isBuying ? localize('Purchasing...') : localize('Buy')}
+          </span>
+          {payout && (
+            <span className="text-xs font-normal opacity-90">
+              <Localize i18n_default_text="Payout {{payout}} USD" values={{ payout }} />
+            </span>
+          )}
+        </span>
+      </Button>
+    ),
+  };
+  return (variants[variant] ?? variants.a)();
+}
+
 export interface ConfigurableTradeControlsProps {
   config: RiseFallAppConfig;
   direction: Direction;
@@ -89,6 +181,12 @@ export interface ConfigurableTradeControlsProps {
   /** Called with the new block order after a drag-drop reorder. */
   onReorder?: (order: BlockKey[]) => void;
   /**
+   * Buy is pinned to the bottom bar, which the view owns — so skip it here
+   * rather than rendering it inline. Also keeps it out of rearrange mode: a
+   * pinned button has no position to drag.
+   */
+  pinBuy?: boolean;
+  /**
    * The chart + symbol-dropdown block, rendered at the `chart` position in the
    * order. It manages its own edit selection, so it's placed as-is (not wrapped
    * in a selectable row).
@@ -129,6 +227,7 @@ export function ConfigurableTradeControls(props: ConfigurableTradeControlsProps)
     selectedKey,
     rearrangeMode,
     onReorder,
+    pinBuy,
     chartSlot,
   } = props;
 
@@ -457,73 +556,15 @@ export function ConfigurableTradeControls(props: ConfigurableTradeControlsProps)
   };
 
   // ── Buy (3 styles, themed) ──────────────────────────────────────────────
-  const renderBuy = () => {
-    const disabled = !isConnected || !proposal || isBuying;
-    const payout = proposal ? proposal.payout.toFixed(2) : null;
-
-    const variants: Record<StyleVariant, () => React.ReactNode> = {
-      // a — pill (default)
-      a: () => (
-        <Button
-          className="w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground"
-          size="lg"
-          disabled={disabled}
-          onClick={onBuy}
-        >
-          {isBuying ? (
-            <Localize i18n_default_text="Purchasing..." />
-          ) : (
-            <span className="flex flex-col items-center leading-tight gap-0.5">
-              <span><Localize i18n_default_text="Buy" /></span>
-              {payout && (
-                <span className="text-xs font-normal opacity-90">
-                  <Localize i18n_default_text="Payout {{payout}} USD" values={{ payout }} />
-                </span>
-              )}
-            </span>
-          )}
-        </Button>
-      ),
-      // Block — squared, bold, payout shown as a badge on the right.
-      b: () => (
-        <Button
-          className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-base font-bold"
-          disabled={disabled}
-          onClick={onBuy}
-        >
-          <span className="flex w-full items-center justify-between px-1">
-            <span>{isBuying ? localize('Purchasing...') : localize('Buy')}</span>
-            {payout && (
-              <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium">
-                {payout} USD
-              </span>
-            )}
-          </span>
-        </Button>
-      ),
-      // Gradient with an upward-trend icon + payout below.
-      c: () => (
-        <Button
-          className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-primary/70 hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/20"
-          disabled={disabled}
-          onClick={onBuy}
-        >
-          <span className="flex flex-col items-center leading-tight gap-0.5">
-            <span className="flex items-center gap-1.5 font-semibold">
-              <TrendingUp className="h-4 w-4" />
-              {isBuying ? localize('Purchasing...') : localize('Buy')}
-            </span>
-            {payout && (
-              <span className="text-xs font-normal opacity-90">
-                <Localize i18n_default_text="Payout {{payout}} USD" values={{ payout }} />
-              </span>
-            )}
-          </span>
-        </Button>
-      ),
-    };
-    return (variants[config.styles.buy] ?? variants.a)();
-  };
+  const renderBuy = () => (
+    <ConfigurableBuyButton
+      variant={config.styles.buy}
+      isConnected={isConnected}
+      proposal={proposal}
+      onBuy={onBuy}
+      isBuying={isBuying}
+    />
+  );
 
   const renderers: Record<ControlKey, () => React.ReactNode> = {
     riseFall: renderRiseFall,
@@ -536,7 +577,12 @@ export function ConfigurableTradeControls(props: ConfigurableTradeControlsProps)
   if (editMode && rearrangeMode) {
     // Rearrange mode: every block (incl. the chart + symbol, which move as one)
     // is draggable to reorder the layout directly in the phone. Inner content is
-    // inert (pointer-events-none) so dragging never triggers the controls.
+    // `inert` AND pointer-events-none — the two are not the same thing, which is
+    // what this comment used to conflate. pointer-events-none keeps a drag from
+    // triggering a control; it leaves the real Buy <button> in the tab order with
+    // Enter/Space live, and /edit trades on a real account. `inert` goes on the
+    // content INSIDE each block, never on the block itself — the block has to stay
+    // draggable.
     return (
       <div className="w-full space-y-2">
         {config.order.map((key) => {
@@ -544,6 +590,7 @@ export function ConfigurableTradeControls(props: ConfigurableTradeControlsProps)
           // Desktop layout: the chart lives in its own fixed left column (no
           // chartSlot here), so it isn't a reorderable block — skip it.
           if (isChart && !chartSlot) return null;
+          if (key === 'buy' && pinBuy) return null;
           const dragging = rearrange.draggingKey === key;
           const over = rearrange.overKey === key;
           return (
@@ -575,7 +622,10 @@ export function ConfigurableTradeControls(props: ConfigurableTradeControlsProps)
               {/* Transparent overlay so a drag can start anywhere on the block —
                   essential over the chart canvas, which otherwise swallows it. */}
               <div className="absolute inset-0 z-[60]" />
-              <div className="pointer-events-none select-none px-2 pb-2 pt-9">
+              <div
+                inert={editMode || undefined}
+                className="pointer-events-none select-none px-2 pb-2 pt-9"
+              >
                 {isChart ? chartSlot : renderers[key as ControlKey]()}
               </div>
             </div>
@@ -591,6 +641,7 @@ export function ConfigurableTradeControls(props: ConfigurableTradeControlsProps)
     return (
       <div className="w-full space-y-3">
         {config.order.map((key) => {
+          if (key === 'buy' && pinBuy) return null;
           if (key === 'chart') {
             return (
               <div
@@ -624,7 +675,16 @@ export function ConfigurableTradeControls(props: ConfigurableTradeControlsProps)
                   selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
                 ].join(' ')}
               />
-              <div className="pointer-events-none">{renderers[key]()}</div>
+              {/* `inert`, not just pointer-events-none: that only removes the
+                  subtree from POINTER hit-testing, so the real Buy <button>
+                  inside keeps tabIndex 0 and Enter/Space still fires its
+                  onClick — and /edit is the live app on a real account. The
+                  pinned bar got this in 9804954; the column needs it for the
+                  same reason. The row <button> around this stays interactive,
+                  so selecting the block still works. */}
+              <div inert={editMode || undefined} className="pointer-events-none">
+                {renderers[key]()}
+              </div>
             </button>
           );
         })}
@@ -639,6 +699,7 @@ export function ConfigurableTradeControls(props: ConfigurableTradeControlsProps)
         // column). On desktop the chart lives in its own column, so it's omitted
         // here to avoid rendering a second chart.
         if (key === 'chart') return chartSlot ? <div key="chart">{chartSlot}</div> : null;
+        if (key === 'buy' && pinBuy) return null;
         return <div key={key}>{renderers[key]()}</div>;
       })}
       {isAuthenticated && (
