@@ -82,14 +82,57 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
     clearSellError,
   } = useBaseTrading({ ws, isConnected, isExhausted, isAuthenticated, onAuthWSFailed, contractTypes: CONTRACT_TYPES });
 
-  const [direction, setDirection] = useState<Direction>('CALL');
-  const [allowEquals, setAllowEquals] = useState<boolean>(false);
-  const [stake, setStake] = useState<string>('10');
-  const [duration, setDuration] = useState<number>(1);
-  const [durationUnit, setDurationUnitRaw] = useState<DurationSelectUnit>('t');
+  //
+  let dValue=24;
+  let urlDate='';
+  let duValue='h';
+  let cType='CALL';
+  let sValue='10';
+  let action="";
+  
+  if(typeof window !=='undefined'){
+	  const query = new URLSearchParams(window.location.search);
+
+      action = query.get("a")?.trim() ?? "";
+
+	  const gdValue = Number(query.get("d"));
+	  dValue = Number.isFinite(gdValue) && gdValue > 0
+		  ? gdValue
+		  : dValue;
+
+	  urlDate = query.get("dt")?.trim() ?? "";
+	  //console.log(urlDate+" "+Date);
+	  
+	  const gduValue = query.get("du");
+	  duValue = gduValue === "m" ||  gduValue === "h" || gduValue === "d" || gduValue === "end-time"
+		  ? gduValue
+		  : duValue;
+
+	  const gcType = query.get("t");
+	  cType = gcType === "f"
+		  ? "PUT"
+		  : cType;
+
+	  const gsValue = Number(query.get("s"));
+	  sValue = Number.isFinite(gsValue) && gsValue > 0
+		  ? String(gsValue)
+		  : sValue;
+	  //console.log("Stake: "+sValue);
+  }
+  //
+
+  const [direction, setDirection] = useState<Direction>(cType as Direction);
+  const [allowEquals, setAllowEquals] = useState<boolean>(true);
+  const [stake, setStake] = useState<string>(sValue);
+  const [duration, setDuration] = useState<number>(dValue);
+  const [durationUnit, setDurationUnitRaw] = useState<DurationSelectUnit>(duValue as DurationSelectUnit);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [endTime, setEndTime] = useState<string>('');
+  const [endTime, setEndTime] = useState<string>("");
   const [durationOptionsSymbol, setDurationOptionsSymbol] = useState<string | null>(null);
+
+  if(action=="trade"){
+	  document.getElementById('buy_btn').click();
+  }
 
   const durationOptions = useMemo(
     () => getDurationOptions(contracts, getDurationUnitLabels(localize)),
