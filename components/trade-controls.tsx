@@ -221,6 +221,7 @@ export function TradeControls({
       {/* Buy button — inline on desktop, fixed above footer on mobile */}
       <div className="max-lg:fixed max-lg:bottom-[calc(env(safe-area-inset-bottom)+2.5rem)] max-lg:left-3 max-lg:right-3 lg:static">
         <Button
+          id="buy_btn"
           className="w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground"
           size="lg"
           disabled={!isConnected || !proposal || isBuying}
