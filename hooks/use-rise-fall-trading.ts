@@ -88,7 +88,7 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
   let duValue='h';
   let cType='CALL';
   let sValue='10';
-  let action="";
+  let action="no";
   
   if(typeof window !=='undefined'){
 	  const query = new URLSearchParams(window.location.search);
