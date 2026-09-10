@@ -130,15 +130,9 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
   const [endTime, setEndTime] = useState<string>("");
   const [durationOptionsSymbol, setDurationOptionsSymbol] = useState<string | null>(null);
 
-const element = document.getElementById("buy_btn");
-if (element) {
-  element.click();
-} else {
-  console.error("Element not found!");
-}
-	
-  if(action=="trade"){
-	  //document.getElementById('buy_btn').click();
+  const element = document.getElementById("buy_btn");
+  if(action=="trade" && element){
+	  element.click();
   }
 
   const durationOptions = useMemo(
