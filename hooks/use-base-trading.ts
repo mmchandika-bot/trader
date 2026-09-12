@@ -94,6 +94,18 @@ export function useBaseTrading({
       const msgType = data.msg_type as string | undefined;
       if (msgType === 'buy' || msgType === 'sell') return;
       const err = data.error as Record<string, string>;
+      // A duplicate subscription is an internal stream-lifecycle event that the
+      // subscription layer recovers from on its own, so it is a developer
+      // signal rather than an app error. Matched on the code only — the message
+      // is server-localized and interpolates the symbol.
+      if (err.code === 'AlreadySubscribed') {
+        console.warn('[useBaseTrading] duplicate subscription reported by the API', {
+          code: err.code,
+          msgType,
+          message: err.message,
+        });
+        return;
+      }
       toast.error(localize('Error'), {
         // API message when present; app-authored fallback otherwise.
         description: err.message ?? localize('Unexpected error occurred. Please try again.'),

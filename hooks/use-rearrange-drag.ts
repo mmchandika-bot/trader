@@ -75,11 +75,21 @@ export function useRearrangeDrag<K extends string>(
         }
       },
       onDragOver: (event) => {
+        // A drag that didn't start in this list (e.g. the other column of a
+        // split desktop layout, or content from outside the page) has no valid
+        // drop target here. Leaving dragover uncancelled tells the browser the
+        // drop is not allowed, so the cursor shows the native not-allowed
+        // feedback instead of a "move" affordance that would silently no-op.
+        if (draggingKey === null) {
+          event.dataTransfer.dropEffect = 'none';
+          return;
+        }
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
         setOverKey((prev) => (prev === key ? prev : key));
       },
       onDragEnter: (event) => {
+        if (draggingKey === null) return;
         event.preventDefault();
         setOverKey((prev) => (prev === key ? prev : key));
       },
@@ -96,7 +106,7 @@ export function useRearrangeDrag<K extends string>(
         setOverKey(null);
       },
     }),
-    [move],
+    [move, draggingKey],
   );
 
   return {

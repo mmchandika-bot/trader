@@ -25,7 +25,7 @@ export function RiseFallChart(props: RiseFallChartProps) {
   return (
     <SmartChartWrapper
       chartId="rise-fall-chart"
-      defaultGranularity={60}
+      defaultGranularity={0}
       {...props}
     />
   );

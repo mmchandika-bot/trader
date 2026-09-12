@@ -10,6 +10,55 @@ interface PendingRequest {
 }
 
 /**
+ * A Deriv API `error` payload, surfaced as a rejection.
+ *
+ * Extends Error so existing handlers that only read `.message` keep working,
+ * while adding the machine-readable `code` callers need to branch on. The API
+ * `message` is server-localized and interpolates values (e.g. the symbol name),
+ * so it is never a safe branch key — use `code`.
+ */
+export class DerivApiError extends Error {
+  /** API error code, e.g. `AlreadySubscribed`. Empty string when the frame carried none. */
+  readonly code: string;
+  /** `msg_type` of the response the error arrived on, when the frame carried one. */
+  readonly msgType: string | undefined;
+
+  constructor(code: string, message: string, msgType?: string) {
+    super(message);
+    this.name = 'DerivApiError';
+    this.code = code;
+    this.msgType = msgType;
+  }
+}
+
+export function isDerivApiError(value: unknown): value is DerivApiError {
+  return value instanceof DerivApiError;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readString(source: Record<string, unknown>, key: string): string | undefined {
+  const value = source[key];
+  return typeof value === 'string' ? value : undefined;
+}
+
+/**
+ * Build a DerivApiError from a raw error frame. The message is left empty when
+ * the API omits it — callers that render it already supply their own localized
+ * fallback, so no English copy is invented here.
+ */
+function toDerivApiError(data: Record<string, unknown>): DerivApiError {
+  const detail = isRecord(data.error) ? data.error : {};
+  return new DerivApiError(
+    readString(detail, 'code') ?? '',
+    readString(detail, 'message') ?? '',
+    readString(data, 'msg_type')
+  );
+}
+
+/**
  * Lightweight WebSocket manager for the Deriv public WS API.
  * Handles connection, reconnection, request/response matching via req_id,
  * and subscription streaming.
@@ -138,12 +187,14 @@ export class DerivWS {
 
   /**
    * Send a subscription request. The handler is called for every streamed message.
-   * Returns a function to unsubscribe.
+   * Returns a function to unsubscribe, which resolves once the server has
+   * acknowledged the `forget` — await it before re-subscribing to the same
+   * stream so the two requests cannot collide with `AlreadySubscribed`.
    */
   subscribe(
     payload: Record<string, unknown>,
     handler: MessageHandler
-  ): Promise<{ subscriptionId: string | null; unsubscribe: () => void }> {
+  ): Promise<{ subscriptionId: string | null; unsubscribe: () => Promise<void> }> {
     return new Promise((resolve, reject) => {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         reject(new Error('WebSocket is not connected'));
@@ -164,10 +215,15 @@ export class DerivWS {
           resolve({
             subscriptionId,
             unsubscribe: () => {
-              if (subscriptionId) {
-                this.subscriptionHandlers.delete(subscriptionId);
-                this.send({ forget: subscriptionId }).catch(() => {});
-              }
+              if (!subscriptionId) return Promise.resolve();
+              this.subscriptionHandlers.delete(subscriptionId);
+              // Always resolves: most callers fire this from a React cleanup
+              // without awaiting, so a rejection here would surface as an
+              // unhandled rejection. Callers await it purely for ordering.
+              return this.send({ forget: subscriptionId }).then(
+                () => undefined,
+                () => undefined
+              );
             },
           });
         },
@@ -217,7 +273,7 @@ export class DerivWS {
       if (reqId && this.pendingRequests.has(reqId)) {
         const pending = this.pendingRequests.get(reqId)!;
         this.pendingRequests.delete(reqId);
-        pending.reject(new Error((data.error as Record<string, string>).message));
+        pending.reject(toDerivApiError(data));
       }
       return;
     }

@@ -82,6 +82,21 @@ function getAuthConfig(lang?: string): AuthConfig {
   return config;
 }
 
+// Start the Scaleo referral resolution ahead of a login/sign-up activation.
+// The login prompt calls this when it opens, so by the time the user taps a
+// CTA the lookup has settled and the click path goes straight to the PKCE
+// build and navigation — the same synchronous shape as Trader's
+// redirectToLogin, whose crypto-only double-tap window Trader accepts with no
+// guard. Consumed (cleared) on use, so a login with no fresh prefetch — the
+// header buttons — resolves its own exactly as before.
+let pendingReferral: ReturnType<typeof resolveReferralViaProxy> | null = null;
+
+export function prefetchAuthReferral(): void {
+  const referralLink = process.env.NEXT_PUBLIC_DERIV_REFERRAL_LINK ?? '';
+  if (!referralLink) return;
+  pendingReferral = resolveReferralViaProxy(referralLink);
+}
+
 // Build the auth config and, if we don't already have an affiliate token (from
 // a resolved/Format-3 referral link or live landing params), try to resolve a
 // fresh per-user token via the app-builder BFF proxy. Strictly non-blocking:
@@ -91,7 +106,9 @@ async function getAuthConfigWithReferral(lang?: string): Promise<AuthConfig> {
   if (!config.affiliateToken) {
     try {
       const referralLink = process.env.NEXT_PUBLIC_DERIV_REFERRAL_LINK ?? '';
-      const resolved = await resolveReferralViaProxy(referralLink);
+      const pending = pendingReferral ?? resolveReferralViaProxy(referralLink);
+      pendingReferral = null;
+      const resolved = await pending;
       if (resolved) {
         config.affiliateToken = resolved.affiliateToken;
         config.affiliateTokenParam = resolved.affiliateTokenParam;

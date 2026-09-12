@@ -70,13 +70,16 @@ export { getAuthBaseUrl, getApiBaseUrl, getPublicWsUrl } from './config';
 export { pickDefaultSymbol } from './utils/pick-default-symbol';
 
 // WebSocket
-export { DerivWS } from './ws';
+export { DerivWS, DerivApiError, isDerivApiError } from './ws';
+export { onStreamFamilyForgotten, notifyStreamFamilyForgotten } from './ws';
+export type { StreamFamilyForgottenEvent, StreamFamilyOwner } from './ws';
 
 // React Hooks
 export {
   useDerivWS,
   useActiveSymbols,
   useTicks,
+  FORGET_ACK_TIMEOUT_MS,
   useProposal,
   useBuy,
 } from './react';

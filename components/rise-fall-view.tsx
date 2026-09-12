@@ -5,6 +5,7 @@ import { Localize } from '@deriv-com/translations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Footer, FooterBar } from '@/components/custom/footer';
 import { Header } from '@/components/custom/header';
+import { LoginPromptDialog } from '@/components/custom/login-prompt-dialog';
 import { PinnedBuyBar } from '@/components/custom/pinned-buy-bar';
 import { useAppTranslations } from '@/components/custom/i18n-provider';
 import { SymbolSelector } from '@/components/custom/symbol-selector';
@@ -12,7 +13,7 @@ import { ThemeToggle } from '@/components/custom/theme-toggle';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useContractMarkers } from '@/hooks/use-contract-markers';
-import { useMemo, type CSSProperties } from 'react';
+import { useCallback, useMemo, useState, type CSSProperties } from 'react';
 import { Ban } from 'lucide-react';
 import { TradeControls } from './trade-controls';
 import { ConfigurableTradeControls, ConfigurableBuyButton } from './configurable-trade-controls';
@@ -78,6 +79,10 @@ const RiseFallChart = dynamic(() => import('./rise-fall-chart').then(module => m
     <div className="h-full w-full animate-pulse rounded-md border border-border/50 dark:border-white/[0.08] bg-muted/30" />
   ),
 });
+
+// Edit-mode stand-in for the login prompt's auth handlers — same rule as the
+// header: no OAuth navigation out of the editor.
+const noopAsyncAuth = async () => {};
 
 export interface RiseFallViewProps {
   // Auth
@@ -247,6 +252,23 @@ export function RiseFallView({
   // regression.
   const inFlowFooter = !!appConfig && isMobile;
   const contractMarkers = useContractMarkers(openPositions, activeSymbol?.underlying_symbol, isMobile);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // Logged-out Buy opens the login/sign-up prompt instead of sending a buy that
+  // would fail with a "Purchase Failed" toast. One gate covers every Buy
+  // surface (standard, configurable, pinned). Edit mode stays inert — the
+  // editor owns Buy clicks there, and its auth actions are already no-ops.
+  const handleBuy = useCallback(async () => {
+    if (editMode) return;
+    // Mid-OAuth (the ?code= callback) the header already shows a login in
+    // progress — don't stack a "please log in" prompt on top of it.
+    if (authState === 'authenticating') return;
+    if (authState !== 'authenticated') {
+      setShowLoginPrompt(true);
+      return;
+    }
+    await buyContract();
+  }, [editMode, authState, buyContract]);
 
   // In edit mode, login/sign-up/account actions are inert (no OAuth navigation
   // out of the editor) — only the theme toggle stays interactive.
@@ -400,7 +422,7 @@ export function RiseFallView({
         ws={ws}
         activeSymbol={activeSymbol}
         proposal={proposal}
-        onBuy={buyContract}
+        onBuy={handleBuy}
         isBuying={isBuying}
         buyResult={buyResult}
         buyError={buyError}
@@ -514,7 +536,7 @@ export function RiseFallView({
                       ws={ws}
                       activeSymbol={activeSymbol}
                       proposal={proposal}
-                      onBuy={buyContract}
+                      onBuy={handleBuy}
                       isBuying={isBuying}
                       buyResult={buyResult}
                       buyError={buyError}
@@ -541,7 +563,7 @@ export function RiseFallView({
             variant={appConfig!.styles.buy}
             isConnected={isConnected}
             proposal={proposal}
-            onBuy={buyContract}
+            onBuy={handleBuy}
             isBuying={isBuying}
           />
         </PinnedBuyBar>
@@ -558,6 +580,13 @@ export function RiseFallView({
           <Footer />
         </div>
       )}
+
+      <LoginPromptDialog
+        open={showLoginPrompt}
+        onOpenChange={setShowLoginPrompt}
+        onLogin={editMode ? noopAsyncAuth : onLogin}
+        onSignUp={editMode ? noopAsyncAuth : onSignUp}
+      />
     </main>
   );
 }
