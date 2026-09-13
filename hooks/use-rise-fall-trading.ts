@@ -133,7 +133,7 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
 	  console.log("action: "+istrade);
 
     const checkButton = setInterval(() => {
-      if (istrade === "trade"){return;}
+      if (istrade != "trade"){return;}
       const element = document.getElementById("buy_btn");
 	    console.log("Buy Button: "+element);
 		
