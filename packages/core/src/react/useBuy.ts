@@ -46,6 +46,11 @@ export function useBuy(
           longcode: response.buy.longcode,
           balanceAfter: response.buy.balance_after,
         });
+
+        const myurl = new URL(window.location.href);
+        myurl.searchParams.delete('a');
+        window.history.replaceState({}, '', myurl);
+		    console.log("URL changed! - "+response.buy.contract_id);
       }
     } catch (err) {
       setBuyError(err instanceof Error ? err.message : 'Purchase failed');
