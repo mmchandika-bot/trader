@@ -141,16 +141,8 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
         clearInterval(checkButton);
         element.click();
 		    console.log("Button Clicked!");
-
-		// const timeoutId = setTimeout(() => {
-  //         	console.log("3 seconds delay finished after click!");
-		// 	// const myurl = new URL(window.location.href);
-		// 	// myurl.searchParams.delete('a');
-		// 	// window.history.replaceState({}, '', myurl);
-		// 	// 	console.log("URL changed!");
-  //       }, 3000);
       }
-    }, 1000);
+    }, 3000);
 
     return () => clearInterval(checkButton);
   }, []);
