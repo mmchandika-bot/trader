@@ -79,6 +79,7 @@ export function ConfigurableBuyButton({
     // a — pill (default)
     a: () => (
       <Button
+        id="buy_btn"
         className="w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground"
         size="lg"
         disabled={disabled}
@@ -101,6 +102,7 @@ export function ConfigurableBuyButton({
     // Block — squared, bold, payout shown as a badge on the right.
     b: () => (
       <Button
+        id="buy_btn"
         className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-base font-bold"
         disabled={disabled}
         onClick={onBuy}
@@ -118,6 +120,7 @@ export function ConfigurableBuyButton({
     // Gradient with an upward-trend icon + payout below.
     c: () => (
       <Button
+        id="buy_btn"
         className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-primary/70 hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/20"
         disabled={disabled}
         onClick={onBuy}
