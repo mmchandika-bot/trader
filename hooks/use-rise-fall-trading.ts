@@ -143,11 +143,11 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
 		    console.log("Button Clicked!");
 
 		timeoutId = setTimeout(() => {
-          console.log("3 seconds delay finished after click!");
-	      //   const myurl = new URL(window.location.href);
-	      //   myurl.searchParams.delete('a');
-	      //   window.history.replaceState({}, '', myurl);
-			    // console.log("URL changed!");
+          	console.log("3 seconds delay finished after click!");
+			const myurl = new URL(window.location.href);
+			myurl.searchParams.delete('a');
+			window.history.replaceState({}, '', myurl);
+				console.log("URL changed!");
         }, 3000);
       }
     }, 1000);
