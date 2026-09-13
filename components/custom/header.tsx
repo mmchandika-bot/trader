@@ -51,9 +51,9 @@ function AccountLabel({ type }: { type: 'demo' | 'real' }) {
       )}
     >
       {type === 'demo' ? (
-        <Localize i18n_default_text="Demo account" />
+        <Localize i18n_default_text="Demo" />
       ) : (
-        <Localize i18n_default_text="Real account" />
+        <Localize i18n_default_text="Real" />
       )}
     </span>
   );
