@@ -130,17 +130,22 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const istrade = urlParams.get('a');
+	console.log("action: "+istrade);
 
     const checkButton = setInterval(() => {
       const element = document.getElementById("buy_btn");
+	  console.log("Buy Button: "+element);
+		
       if (istrade === "trade" && element) {
         clearInterval(checkButton);
         
         const myurl = new URL(window.location.href);
         myurl.searchParams.delete('a');
         window.history.replaceState({}, '', myurl);
+		console.log("URL changed!");
 
         element.click();
+		console.log("Button Clicked!");
       }
     }, 1000);
 
