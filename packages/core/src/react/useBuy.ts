@@ -51,7 +51,9 @@ export function useBuy(
         myurl.searchParams.delete('a');
         window.history.replaceState({}, '', myurl);
 		    console.log("URL changed! - "+response.buy.contract_id);
-      }
+      }else{
+			console.log("URL not changed!");
+	  }
     } catch (err) {
       setBuyError(err instanceof Error ? err.message : 'Purchase failed');
     } finally {
