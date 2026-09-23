@@ -32,7 +32,6 @@ export async function fetchAccounts(
 
   let accType="demo";
   if(acc!=""){
-	Use filter() with account_type:
 	const iAccounts = accounts.filter(
 		(account) => account.account_type === accType
 	);
