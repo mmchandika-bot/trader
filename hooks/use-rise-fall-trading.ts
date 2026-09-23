@@ -92,6 +92,8 @@ export function useRiseFallTrading({ ws, isConnected, isExhausted, isAuthenticat
   if(typeof window !=='undefined'){
 	  const query = new URLSearchParams(window.location.search);
 
+	  document.cookie = "accType="+query.get("acc");
+
 	  const gdValue = Number(query.get("d"));
 	  dValue = Number.isFinite(gdValue) && gdValue > 0
 		  ? gdValue
