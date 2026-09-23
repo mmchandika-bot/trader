@@ -29,22 +29,6 @@ export async function fetchAccounts(
   const accounts: DerivAccount[] = data.data;
 
   storeDerivAccounts(accounts);
-
-  //////
-  let accType = "demo";
-  if(accType!=""){
-	const iAccounts = accounts.filter(
-		(account) => account.account_type === accType
-	);
-
-	if (iAccounts.length > 0) {
-		const myAccount = iAccounts[0];
-		setActiveLoginId(myAccount.account_id);
-		setAccountType(myAccount.account_type);
-	}
-	return iAccounts;
-  }
-  ////  
   
   if (accounts.length > 0) {
 	const firstAccount = accounts[0];
