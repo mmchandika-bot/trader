@@ -41,14 +41,14 @@ export async function fetchAccounts(
 		setActiveLoginId(myAccount.account_id);
 		setAccountType(myAccount.account_type);
 	}
-  }else{
-	  if (accounts.length > 0) {
-		const firstAccount = accounts[0];
-		setActiveLoginId(firstAccount.account_id);
-		setAccountType(firstAccount.account_type);
-	  }
+	return iAccounts;
   }
-
+  
+  if (accounts.length > 0) {
+	const firstAccount = accounts[0];
+	setActiveLoginId(firstAccount.account_id);
+	setAccountType(firstAccount.account_type);
+  }
   return accounts;
 }
 
