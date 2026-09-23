@@ -31,8 +31,7 @@ export async function fetchAccounts(
   storeDerivAccounts(accounts);
 
   //////
-  const accType = "demo";
-  if(accType==="demo" || accType==="real"){
+  let accType = "demo";
   if(accType!=""){
 	const iAccounts = accounts.filter(
 		(account) => account.account_type === accType
