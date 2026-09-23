@@ -30,10 +30,24 @@ export async function fetchAccounts(
 
   storeDerivAccounts(accounts);
 
-  if (accounts.length > 0) {
-    const firstAccount = accounts[0];
-    setActiveLoginId(firstAccount.account_id);
-    setAccountType(firstAccount.account_type);
+  let accType="demo";
+  if(acc!=""){
+	Use filter() with account_type:
+	const iAccounts = accounts.filter(
+		(account) => account.account_type === accType
+	);
+
+	if (myAccounts.length > 0) {
+		const myAccount = iAccounts[0];
+		setActiveLoginId(myAccount.account_id);
+		setAccountType(myAccount.account_type);
+	}
+  }else{
+	  if (accounts.length > 0) {
+		const firstAccount = accounts[0];
+		setActiveLoginId(firstAccount.account_id);
+		setAccountType(firstAccount.account_type);
+	  }
   }
 
   return accounts;
