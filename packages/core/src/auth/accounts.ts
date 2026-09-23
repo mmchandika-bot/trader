@@ -30,22 +30,8 @@ export async function fetchAccounts(
 
   storeDerivAccounts(accounts);
 
-	//////
-	export function getCookie(name: string) {
-	  // Check if code is running in the browser
-	  if (typeof window === 'undefined' || typeof document === 'undefined') {
-		return null;
-	  }
-
-	  // Safe to access document.cookie in browser context
-	  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-	  return match ? decodeURIComponent(match[2]) : null;
-	}
-
-	// Example usage:
-	const accType = getCookie("accType");
-	console.log("acc: "+accType);
-
+  //////
+  const accType = "demo";
   if(accType==="demo" || accType==="real"){
   if(accType!=""){
 	const iAccounts = accounts.filter(
@@ -58,6 +44,7 @@ export async function fetchAccounts(
 		setAccountType(myAccount.account_type);
 	}
 	return iAccounts;
+  }
   ////  
   
   if (accounts.length > 0) {
