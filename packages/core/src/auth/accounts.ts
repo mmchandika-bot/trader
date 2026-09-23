@@ -36,7 +36,7 @@ export async function fetchAccounts(
 		(account) => account.account_type === accType
 	);
 
-	if (myAccounts.length > 0) {
+	if (iAccounts.length > 0) {
 		const myAccount = iAccounts[0];
 		setActiveLoginId(myAccount.account_id);
 		setAccountType(myAccount.account_type);
