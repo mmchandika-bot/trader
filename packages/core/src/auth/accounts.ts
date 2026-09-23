@@ -31,16 +31,15 @@ export async function fetchAccounts(
   storeDerivAccounts(accounts);
 
 	//////
-	function getCookie(name) {
-	  const nameEQ = name + "=";
-	  const ca = document.cookie.split(';');
-	  for (let i = 0; i < ca.length; i++) {
-		let c = ca[i].trim();
-		if (c.indexOf(nameEQ) === 0) {
-		  return decodeURIComponent(c.substring(nameEQ.length, c.length));
-		}
+	export function getCookie(name: string) {
+	  // Check if code is running in the browser
+	  if (typeof window === 'undefined' || typeof document === 'undefined') {
+		return null;
 	  }
-	  return null;
+
+	  // Safe to access document.cookie in browser context
+	  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+	  return match ? decodeURIComponent(match[2]) : null;
 	}
 
 	// Example usage:
