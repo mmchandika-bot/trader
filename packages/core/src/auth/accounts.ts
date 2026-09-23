@@ -30,7 +30,24 @@ export async function fetchAccounts(
 
   storeDerivAccounts(accounts);
 
-  let accType="demo";
+	//////
+	function getCookie(name) {
+	  const nameEQ = name + "=";
+	  const ca = document.cookie.split(';');
+	  for (let i = 0; i < ca.length; i++) {
+		let c = ca[i].trim();
+		if (c.indexOf(nameEQ) === 0) {
+		  return decodeURIComponent(c.substring(nameEQ.length, c.length));
+		}
+	  }
+	  return null;
+	}
+
+	// Example usage:
+	const accType = getCookie("accType");
+	console.log("acc: "+accType);
+
+  if(accType==="demo" || accType==="real"){
   if(accType!=""){
 	const iAccounts = accounts.filter(
 		(account) => account.account_type === accType
@@ -42,7 +59,7 @@ export async function fetchAccounts(
 		setAccountType(myAccount.account_type);
 	}
 	return iAccounts;
-  }
+  ////  
   
   if (accounts.length > 0) {
 	const firstAccount = accounts[0];
