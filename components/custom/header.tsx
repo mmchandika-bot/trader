@@ -24,7 +24,7 @@ interface HeaderProps {
   logoSrc?: string;
   /** App name used for the header text and the fallback logo letter when no logoSrc
    *  is provided. Prefers the live preview / Customise name, then
-   *  NEXT_PUBLIC_DERIV_APP_NAME, then 'Deriv Trading'. */
+   *  NEXT_PUBLIC_DERIV_APP_NAME, then 'Rise/Fall Trading'. */
   appName?: string;
   /**
    * When false, hide the name text next to the logo. Defaults to the
